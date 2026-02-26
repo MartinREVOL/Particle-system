@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "PSComponent.h"
 #include "GameFramework/Actor.h"
 #include "PSActor.generated.h"
 
@@ -12,7 +13,6 @@ class PARTICLESYSTEM_API APSActor : public AActor
 public:
 	APSActor();
 	
-private:
 	UPROPERTY(Category = PSActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UPSComponent> PSComponent;
+	TObjectPtr<UPSComponent> PSComponent;
 };

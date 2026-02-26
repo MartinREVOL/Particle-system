@@ -28,30 +28,28 @@ FPrimitiveViewRelevance FPSPrimitiveSceneProxy::GetViewRelevance(const FSceneVie
 	return Result;
 }
 
-void FPSPrimitiveSceneProxy::GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap, FMeshElementCollector& Collector) const
+void FPSPrimitiveSceneProxy::GetDynamicMeshElements(
+	const TArray<const FSceneView*>& Views,
+	const FSceneViewFamily& ViewFamily,
+	uint32 VisibilityMap,
+	FMeshElementCollector& Collector) const
 {
 	for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ViewIndex++)
 	{
 		if (VisibilityMap & (1 << ViewIndex))
 		{
 			FPrimitiveDrawInterface* PDI = Collector.GetPDI(ViewIndex);
-			
-			const FVector& OffsetLocation = Component->GetComponentLocation();
-			const FVector& GridSize = Component->GridSize;
-			const float GridSpacing = Component->GridSpacing;
+
 			const float ParticleSize = Component->ParticleSize;
 			
-			DrawWireBox(PDI, FBox(FVector(-ParticleSize) + OffsetLocation, GridSize * GridSpacing + ParticleSize + OffsetLocation), FLinearColor::Green, SDPG_World, 5);
+			const FVector OffsetLocation = Component->GetComponentLocation();
+			DrawWireBox(PDI, FBox(OffsetLocation - FVector(100), OffsetLocation + FVector(100)),
+						FLinearColor::Green, SDPG_World, 2);
 			
-			for (int32 x = 0; x < GridSize.X; x++)
+			const TArray<FPSParticle>& Particles = Component->GetParticles();
+			for (const FPSParticle& P : Particles)
 			{
-				for (int32 y = 0; y < GridSize.Y; y++)
-				{
-					for (int32 z = 0; z < GridSize.Z; z++)
-					{
-						PDI->DrawPoint(GridSpacing * FVector(x, y, z) + OffsetLocation, FLinearColor::Red, ParticleSize, SDPG_World);
-					}
-				}
+				PDI->DrawPoint(P.Position, P.Color, ParticleSize, SDPG_World);
 			}
 		}
 	}

@@ -2,9 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/PrimitiveComponent.h"
+#include "HAL/CriticalSection.h"
+#include "../PSParticleSystem.h"
+#include "../PSSpawnSettings.h"
 #include "PSComponent.generated.h"
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), BlueprintType, Blueprintable)
 class PARTICLESYSTEM_API UPSComponent : public UPrimitiveComponent
 {
 	GENERATED_BODY()
@@ -25,13 +28,31 @@ public:
 	//~ Begin USceneComponent Interface
 	virtual FBoxSphereBounds CalcBounds(const FTransform &LocalToWorld) const override;
 	//~ End USceneComponent Interface
+
 	
 private:
-	// TODO : Implement FParticleSystem
+	mutable FCriticalSection RenderParticlesMutex;
+	TArray<FPSParticle> RenderParticles;
 	
 public:
-	// FParticleSystem* GetParticleSystem();
+	// Expose particles to the scene proxy (render thread will read them)
+	const TArray<FPSParticle>& GetParticles() const { return ParticleSystem.GetParticles(); }
+	
 	FVector GridSize = FVector(25, 25, 25);
 	float GridSpacing = 10.0f;
 	float ParticleSize = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PSComponent")
+	float NbrParticules;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PSComponent")
+	int32 MaxParticles = 2000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PSComponent")
+	float SpawnRate = 300.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="ParticleSystem")
+	FPSSpawnSettings SpawnSettings;
+
+	FParticleSystem ParticleSystem;
 };

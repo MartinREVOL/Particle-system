@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "PSComponent.h"
+#include "../PSParticleSystem.h"
 
 class PARTICLESYSTEM_API FPSPrimitiveSceneProxy : public FPrimitiveSceneProxy
 {

@@ -10,11 +10,18 @@ UPSComponent::UPSComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
+	NbrParticules = 25;
 }
 
 void UPSComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GridSize.X = NbrParticules;
+	GridSize.Y = NbrParticules;
+	GridSize.Z = NbrParticules;
+
+	ParticleSystem.Init(MaxParticles, SpawnRate);
 }
 
 void UPSComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -25,8 +32,6 @@ void UPSComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void UPSComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
-	SetRelativeLocation(FVector(100 * sin(GetWorld()->GetTimeSeconds()), 0, 0));
 	MarkRenderStateDirty();
 }
 
