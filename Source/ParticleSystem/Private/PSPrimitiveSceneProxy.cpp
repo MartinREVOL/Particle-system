@@ -46,10 +46,12 @@ void FPSPrimitiveSceneProxy::GetDynamicMeshElements(
 			DrawWireBox(PDI, FBox(OffsetLocation - FVector(100), OffsetLocation + FVector(100)),
 						FLinearColor::Green, SDPG_World, 2);
 			
-			const TArray<FPSParticle>& Particles = Component->GetParticles();
-			for (const FPSParticle& P : Particles)
+			if (const TArray<FPSParticle>* Particles = Component->GetParticles())
 			{
-				PDI->DrawPoint(P.Position, P.Color, ParticleSize, SDPG_World);
+				for (const FPSParticle& P : *Particles)
+				{
+					PDI->DrawPoint(P.Position, P.Color, ParticleSize, SDPG_World);
+				}
 			}
 		}
 	}
