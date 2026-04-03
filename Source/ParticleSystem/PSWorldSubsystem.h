@@ -2,17 +2,17 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
-#include "PSParticleSystem.h"
+#include "PSParticleSystemTypes.h"
 #include "PSSpawnSettings.h"
 #include "PSWorldSubsystem.generated.h"
 
 USTRUCT()
-struct FPSSystemEntry
+struct FPSMovingSystemEntry
 {
 	GENERATED_BODY()
 
 	int32 Id = INDEX_NONE;
-	FParticleSystem System;
+	FMovingParticleSystem System;
 	FTransform Transform = FTransform::Identity;
 	FPSSpawnSettings SpawnSettings;
 	bool bPendingDestroy = false;
@@ -30,20 +30,19 @@ public:
 
 	int32 RequestSpawnSystem(const FTransform& InTransform, const FPSSpawnSettings& InSpawnSettings, int32 MaxParticles, float SpawnRate);
 	void RequestDestroySystem(int32 SystemId);
-
 	void UpdateSystemTransform(int32 SystemId, const FTransform& NewTransform);
 
-	const FParticleSystem* GetSystem(int32 SystemId) const;
+	const FMovingParticleSystem* GetSystem(int32 SystemId) const;
 
 private:
-	FPSSystemEntry* FindEntry(int32 SystemId);
-	const FPSSystemEntry* FindEntry(int32 SystemId) const;
+	FPSMovingSystemEntry* FindEntry(int32 SystemId);
+	const FPSMovingSystemEntry* FindEntry(int32 SystemId) const;
 
 	void ProcessPendingDestroy();
 
 private:
 	UPROPERTY(Transient)
-	TArray<FPSSystemEntry> Systems;
+	TArray<FPSMovingSystemEntry> Systems;
 
 	int32 NextSystemId = 0;
 };

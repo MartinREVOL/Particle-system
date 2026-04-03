@@ -14,23 +14,34 @@ void FParticleSystem::Tick(float DeltaTime,
 						   const FPSSpawnSettings& SpawnSettings)
 {
 	// ------------------------
-	// Update + Kill
+	// Update + Compact
 	// ------------------------
 
-	for (int32 i = Particles.Num() - 1; i >= 0; --i)
+	int32 WriteIndex = 0;
+	const int32 Count = Particles.Num();
+
+	for (int32 ReadIndex = 0; ReadIndex < Count; ++ReadIndex)
 	{
-		FPSParticle& P = Particles[i];
+		FPSParticle& P = Particles[ReadIndex];
 
 		P.Age += DeltaTime;
 
 		if (!P.IsAlive())
 		{
-			Particles.RemoveAtSwap(i);
 			continue;
 		}
 
 		P.Position += P.Velocity * DeltaTime;
+
+		if (WriteIndex != ReadIndex)
+		{
+			Particles[WriteIndex] = MoveTemp(P); // replacement of RemoveAtSwap()
+		}
+
+		++WriteIndex;
 	}
+
+	Particles.SetNum(WriteIndex, EAllowShrinking::No);
 
 	// ------------------------
 	// Spawn

@@ -1,15 +1,20 @@
 ﻿#include "PSWorldSubsystem.h"
+#include "PSParticlePolicies.h"
 
 void UPSWorldSubsystem::Tick(float DeltaTime)
 {
-	for (FPSSystemEntry& Entry : Systems)
+	for (FPSMovingSystemEntry& Entry : Systems)
 	{
 		if (Entry.bPendingDestroy)
 		{
 			continue;
 		}
 
-		Entry.System.Tick(DeltaTime, Entry.Transform, Entry.SpawnSettings);
+		FPSSpawnContext SpawnContext;
+		SpawnContext.ComponentTransform = Entry.Transform;
+		SpawnContext.SpawnSettings = Entry.SpawnSettings;
+
+		Entry.System.Tick(DeltaTime, SpawnContext);
 	}
 
 	ProcessPendingDestroy();
@@ -20,9 +25,13 @@ TStatId UPSWorldSubsystem::GetStatId() const
 	RETURN_QUICK_DECLARE_CYCLE_STAT(UPSWorldSubsystem, STATGROUP_Tickables);
 }
 
-int32 UPSWorldSubsystem::RequestSpawnSystem(const FTransform& InTransform, const FPSSpawnSettings& InSpawnSettings, int32 MaxParticles, float SpawnRate)
+int32 UPSWorldSubsystem::RequestSpawnSystem(
+	const FTransform& InTransform,
+	const FPSSpawnSettings& InSpawnSettings,
+	int32 MaxParticles,
+	float SpawnRate)
 {
-	FPSSystemEntry NewEntry;
+	FPSMovingSystemEntry NewEntry;
 	NewEntry.Id = NextSystemId++;
 	NewEntry.Transform = InTransform;
 	NewEntry.SpawnSettings = InSpawnSettings;
@@ -36,7 +45,7 @@ int32 UPSWorldSubsystem::RequestSpawnSystem(const FTransform& InTransform, const
 
 void UPSWorldSubsystem::RequestDestroySystem(int32 SystemId)
 {
-	if (FPSSystemEntry* Entry = FindEntry(SystemId))
+	if (FPSMovingSystemEntry* Entry = FindEntry(SystemId))
 	{
 		Entry->bPendingDestroy = true;
 	}
@@ -44,15 +53,15 @@ void UPSWorldSubsystem::RequestDestroySystem(int32 SystemId)
 
 void UPSWorldSubsystem::UpdateSystemTransform(int32 SystemId, const FTransform& NewTransform)
 {
-	if (FPSSystemEntry* Entry = FindEntry(SystemId))
+	if (FPSMovingSystemEntry* Entry = FindEntry(SystemId))
 	{
 		Entry->Transform = NewTransform;
 	}
 }
 
-const FParticleSystem* UPSWorldSubsystem::GetSystem(int32 SystemId) const
+const FMovingParticleSystem* UPSWorldSubsystem::GetSystem(int32 SystemId) const
 {
-	if (const FPSSystemEntry* Entry = FindEntry(SystemId))
+	if (const FPSMovingSystemEntry* Entry = FindEntry(SystemId))
 	{
 		if (!Entry->bPendingDestroy)
 		{
@@ -63,17 +72,17 @@ const FParticleSystem* UPSWorldSubsystem::GetSystem(int32 SystemId) const
 	return nullptr;
 }
 
-FPSSystemEntry* UPSWorldSubsystem::FindEntry(int32 SystemId)
+FPSMovingSystemEntry* UPSWorldSubsystem::FindEntry(int32 SystemId)
 {
-	return Systems.FindByPredicate([SystemId](const FPSSystemEntry& Entry)
+	return Systems.FindByPredicate([SystemId](const FPSMovingSystemEntry& Entry)
 	{
 		return Entry.Id == SystemId;
 	});
 }
 
-const FPSSystemEntry* UPSWorldSubsystem::FindEntry(int32 SystemId) const
+const FPSMovingSystemEntry* UPSWorldSubsystem::FindEntry(int32 SystemId) const
 {
-	return Systems.FindByPredicate([SystemId](const FPSSystemEntry& Entry)
+	return Systems.FindByPredicate([SystemId](const FPSMovingSystemEntry& Entry)
 	{
 		return Entry.Id == SystemId;
 	});

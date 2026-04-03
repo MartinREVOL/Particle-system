@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/PrimitiveComponent.h"
 #include "ParticleSystem/PSSpawnSettings.h"
+#include "../PSParticleTypes.h"
 #include "PSComponent.generated.h"
 
 class FPSPrimitiveSceneProxy;
@@ -27,7 +28,9 @@ public:
 
 	virtual FBoxSphereBounds CalcBounds(const FTransform& LocalToWorld) const override;
 
-	const TArray<FPSParticle>* GetParticles() const;
+	//const TArray<FPSParticle>* GetParticles() const;
+
+	const TArray<FMovingParticle>* GetParticles() const;
 
 public:
 	FVector GridSize = FVector(25, 25, 25);

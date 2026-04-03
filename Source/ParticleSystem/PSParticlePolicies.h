@@ -1,61 +1,89 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "PSParticleTypes.h"
 #include "PSSpawnSettings.h"
-#include "PSParticles.h"
 
-struct FPSBasicParticleUpdatePolicy
+struct FPSSpawnContext
 {
-	static void Update(FPSBasicParticle& Particle, float DeltaTime)
-	{
-		Particle.Age += DeltaTime;
-	}
+	FTransform ComponentTransform = FTransform::Identity;
+	FPSSpawnSettings SpawnSettings;
 };
 
-struct FPSMovingParticleUpdatePolicy
+// =========================
+// Update Policies
+// =========================
+
+struct FMovingParticleUpdatePolicy
 {
-	static void Update(FPSMovingParticle& Particle, float DeltaTime)
+	static void Update(FMovingParticle& Particle, float DeltaTime)
 	{
 		Particle.Age += DeltaTime;
 		Particle.Position += Particle.Velocity * DeltaTime;
 	}
-};
 
-struct FPSBasicParticleSpawnPolicy
-{
-	static void Spawn(FPSBasicParticle& Particle, const FTransform& Transform, const FPSSpawnSettings& Settings)
+	static bool IsAlive(const FMovingParticle& Particle)
 	{
-		const FVector LocalOffset(
-			FMath::FRandRange(-Settings.EmitterBoxExtent.X, Settings.EmitterBoxExtent.X),
-			FMath::FRandRange(-Settings.EmitterBoxExtent.Y, Settings.EmitterBoxExtent.Y),
-			FMath::FRandRange(-Settings.EmitterBoxExtent.Z, Settings.EmitterBoxExtent.Z)
-		);
-
-		Particle.Position = Transform.TransformPosition(LocalOffset);
-		Particle.Age = 0.f;
-		Particle.Lifetime = Settings.Lifetime.Sample();
-		Particle.Color = Settings.Color.Sample();
+		return Particle.Age < Particle.Lifetime;
 	}
 };
 
-struct FPSMovingParticleSpawnPolicy
+struct FStaticParticleUpdatePolicy
 {
-	static void Spawn(FPSMovingParticle& Particle, const FTransform& Transform, const FPSSpawnSettings& Settings)
+	static void Update(FStaticParticle& Particle, float DeltaTime)
 	{
+		Particle.Age += DeltaTime;
+	}
+
+	static bool IsAlive(const FStaticParticle& Particle)
+	{
+		return Particle.Age < Particle.Lifetime;
+	}
+};
+
+// =========================
+// Spawn Policies
+// =========================
+
+struct FMovingParticleSpawnPolicy
+{
+	static void Spawn(FMovingParticle& Particle, const FPSSpawnContext& Context)
+	{
+		const FPSSpawnSettings& S = Context.SpawnSettings;
+
 		const FVector LocalOffset(
-			FMath::FRandRange(-Settings.EmitterBoxExtent.X, Settings.EmitterBoxExtent.X),
-			FMath::FRandRange(-Settings.EmitterBoxExtent.Y, Settings.EmitterBoxExtent.Y),
-			FMath::FRandRange(-Settings.EmitterBoxExtent.Z, Settings.EmitterBoxExtent.Z)
+			FMath::FRandRange(-S.EmitterBoxExtent.X, S.EmitterBoxExtent.X),
+			FMath::FRandRange(-S.EmitterBoxExtent.Y, S.EmitterBoxExtent.Y),
+			FMath::FRandRange(-S.EmitterBoxExtent.Z, S.EmitterBoxExtent.Z)
 		);
 
-		Particle.Position = Transform.TransformPosition(LocalOffset);
+		Particle.Position = Context.ComponentTransform.TransformPosition(LocalOffset);
 
-		const FVector Dir = Settings.Direction.Sample();
-		const float Speed = Settings.Speed.Sample();
+		const FVector Dir = S.Direction.Sample();
+		const float Speed = S.Speed.Sample();
+
 		Particle.Velocity = Dir * Speed;
-
 		Particle.Age = 0.f;
-		Particle.Lifetime = Settings.Lifetime.Sample();
-		Particle.Color = Settings.Color.Sample();
+		Particle.Lifetime = S.Lifetime.Sample();
+		Particle.Color = S.Color.Sample();
+	}
+};
+
+struct FStaticParticleSpawnPolicy
+{
+	static void Spawn(FStaticParticle& Particle, const FPSSpawnContext& Context)
+	{
+		const FPSSpawnSettings& S = Context.SpawnSettings;
+
+		const FVector LocalOffset(
+			FMath::FRandRange(-S.EmitterBoxExtent.X, S.EmitterBoxExtent.X),
+			FMath::FRandRange(-S.EmitterBoxExtent.Y, S.EmitterBoxExtent.Y),
+			FMath::FRandRange(-S.EmitterBoxExtent.Z, S.EmitterBoxExtent.Z)
+		);
+
+		Particle.Position = Context.ComponentTransform.TransformPosition(LocalOffset);
+		Particle.Age = 0.f;
+		Particle.Lifetime = S.Lifetime.Sample();
+		Particle.Color = S.Color.Sample();
 	}
 };

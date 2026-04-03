@@ -69,11 +69,24 @@ UPSWorldSubsystem* UPSComponent::GetPSWorldSubsystem() const
 	return GetWorld() ? GetWorld()->GetSubsystem<UPSWorldSubsystem>() : nullptr;
 }
 
-const TArray<FPSParticle>* UPSComponent::GetParticles() const
+// const TArray<FPSParticle>* UPSComponent::GetParticles() const
+// {
+// 	if (const UPSWorldSubsystem* Subsystem = GetWorld() ? GetWorld()->GetSubsystem<UPSWorldSubsystem>() : nullptr)
+// 	{
+// 		if (const FParticleSystem* System = Subsystem->GetSystem(SystemId))
+// 		{
+// 			return &System->GetParticles();
+// 		}
+// 	}
+//
+// 	return nullptr;
+// }
+
+const TArray<FMovingParticle>* UPSComponent::GetParticles() const
 {
 	if (const UPSWorldSubsystem* Subsystem = GetWorld() ? GetWorld()->GetSubsystem<UPSWorldSubsystem>() : nullptr)
 	{
-		if (const FParticleSystem* System = Subsystem->GetSystem(SystemId))
+		if (const FMovingParticleSystem* System = Subsystem->GetSystem(SystemId))
 		{
 			return &System->GetParticles();
 		}
